@@ -7,9 +7,12 @@ extension String {
     }
 }
 
-func getData(urlRequest: String) {
-    let urlRequest = URL(string: urlRequest)
-    guard let url = urlRequest else { return }
+func getData(url: URL?) {
+    guard let url = url else {
+        print("Пустая ссылка")
+        return
+    }
+
     URLSession.shared.dataTask(with: url) { data, response, error in
 
         guard let response = response as? HTTPURLResponse else {
@@ -52,13 +55,40 @@ func getData(urlRequest: String) {
 
 let urlRequest = "https://api.chucknorris.io/jokes/random"
 
-getData(urlRequest: urlRequest)
+func makeURL() -> URL? {
+    var urlComponents: URLComponents {
+        var urlComponents = URLComponents()
+        urlComponents.scheme = "https"
+        urlComponents.host = "api.chucknorris.io"
+        urlComponents.path = "/jokes/random"
+
+        return urlComponents
+    }
+    return urlComponents.url
+}
+
+getData(url: makeURL())
+sleep(1)
 
 let publicKey = "723d6f5dff37f9143059dbd05970bfcc"
 let privateKey = "0f4102a4697711c82d2c2ff842952d3baa8aca51"
 let timeStamp = DateFormatter().string(from: Date())
 let hash = (timeStamp + privateKey + publicKey).md5
 
-let marvelUrlRequest = "https://gateway.marvel.com:443/v1/public/characters/1010743?ts=\(timeStamp)&apikey=\(publicKey)&hash=\(hash)"
+func makeMarvelURL(with id: String) -> URL? {
+    var urlComponents: URLComponents {
+        var urlComponents = URLComponents()
+        urlComponents.scheme = "https"
+        urlComponents.host = "gateway.marvel.com"
+        urlComponents.path = "/v1/public/characters/\(id)"
+        urlComponents.queryItems = [
+            URLQueryItem(name: "ts", value: timeStamp),
+            URLQueryItem(name: "apikey", value: publicKey),
+            URLQueryItem(name: "hash", value: hash)
+        ]
+        return urlComponents
+    }
+    return urlComponents.url
+}
 
-getData(urlRequest: marvelUrlRequest)
+getData(url: makeMarvelURL(with: "1010743"))
